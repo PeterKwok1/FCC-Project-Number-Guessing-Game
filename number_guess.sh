@@ -13,39 +13,57 @@ GUESSES=0
 GUESS() {
 # read user guess 
   read GUESS
-# if guess > target
-  if [[ $GUESS > $RANDOM_NUMBER ]] 
+  # if guess is not a number
+  if [[ ! $GUESS =~ ^[0-9]+$ ]]
+  then 
+    # display invalid input
+    echo "That is not an integer, guess again:"
+    # try again
+    GUESS
+  # else if guess > target
+  elif (( $GUESS > $RANDOM_NUMBER ))
   then 
     # display hint
     echo "It's lower than that, guess again:"
+    # increment guesses
+    GUESSES=$(($GUESSES+1))
+    # try again
+    GUESS
+  # else if guess < target
+  elif (( $GUESS < $RANDOM_NUMBER ))
+  then
+    # display hint
+    echo "It's higher than that, guess again:"
     # increment tries
     GUESSES=$(($GUESSES+1))
     # try again
-# else if guess < target
-# display hint
-# increment tries
-# try again
-# else if guess = target
-# insert user and game
-# display winning summary 
-# else display invalid input
+    GUESS
+  # else if guess = target
+  else
+    # insert game
+    USER_ID="$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME'")"
+    INSERT_GAME_RESULT="$($PSQL "INSERT INTO games(number_of_guesses, user_id) VALUES($GUESSES, $USER_ID)")"
+    # display winning summary 
+    echo "You guessed it in $GUESSES tries. The secret number was $RANDOM_NUMBER. Nice job!"  
   fi
 }
 
 # read username
-echo "Enter your username"
+echo "Enter your username:"
 read USERNAME
 # if username does not exist
-USERNAME_RESULT="$($PSQL "SELECT user FROM users WHERE user='$USERNAME'")"
+USERNAME_RESULT="$($PSQL "SELECT username FROM users WHERE username='$USERNAME'")"
 if [[ -z $USERNAME_RESULT ]] 
 then
+  # insert user
+  INSERT_USER_RESULT="$($PSQL "INSERT INTO users(username) VALUES('$USERNAME')")"
   # display welcome first time 
   echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
 else
   # else display welcome back 
-  GAMES_PLAYED="$($PSQL "SELECT COUNT(game_id) FROM users INNER JOIN games USING(user_id) WHERE user=$USERNAME")"
-  BEST_GAME="$($PSQL "SELECT MIN(number_of_guesses) FROM users INNER JOIN games USING(user_id) WHERE user=$USERNAME")"
-  echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+  GAMES_PLAYED="$($PSQL "SELECT COUNT(game_id) FROM users INNER JOIN games USING(user_id) WHERE username='$USERNAME'")"
+  BEST_GAME="$($PSQL "SELECT MIN(number_of_guesses) FROM users INNER JOIN games USING(user_id) WHERE username='$USERNAME'")"
+  echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
 fi
 # display game explanation
 echo "Guess the secret number between 1 and 1000:"
