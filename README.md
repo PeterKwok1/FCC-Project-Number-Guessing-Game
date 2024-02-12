@@ -1,5 +1,6 @@
 # Start db
 sudo service postgresql restart
+
 psql --username=freecodecamp --dbname=number_guess
 
 # Dump db
