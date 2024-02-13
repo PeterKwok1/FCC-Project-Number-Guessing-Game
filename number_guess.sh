@@ -11,8 +11,10 @@ GUESSES=0
 
 # guess function
 GUESS() {
-# read user guess 
+  # read user guess 
   read GUESS
+  # increment guesses
+  GUESSES=$(($GUESSES+1))
   # if guess is not a number
   if [[ ! $GUESS =~ ^[0-9]+$ ]]
   then 
@@ -25,8 +27,6 @@ GUESS() {
   then 
     # display hint
     echo "It's lower than that, guess again:"
-    # increment guesses
-    GUESSES=$(($GUESSES+1))
     # try again
     GUESS
   # else if guess < target
@@ -34,8 +34,6 @@ GUESS() {
   then
     # display hint
     echo "It's higher than that, guess again:"
-    # increment tries
-    GUESSES=$(($GUESSES+1))
     # try again
     GUESS
   # else if guess = target
@@ -52,13 +50,13 @@ GUESS() {
 echo "Enter your username:"
 read USERNAME
 # if username does not exist
-USERNAME_RESULT="$($PSQL "SELECT username FROM users WHERE username='$USERNAME'")"
+USERNAME_RESULT="$($PSQL "SELECT * FROM users WHERE username='$USERNAME'")"
 if [[ -z $USERNAME_RESULT ]] 
 then
   # insert user
   INSERT_USER_RESULT="$($PSQL "INSERT INTO users(username) VALUES('$USERNAME')")"
   # display welcome first time 
-  echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
+  echo "Welcome, $USERNAME! It looks like this is your first time here."
 else
   # else display welcome back 
   GAMES_PLAYED="$($PSQL "SELECT COUNT(game_id) FROM users INNER JOIN games USING(user_id) WHERE username='$USERNAME'")"
