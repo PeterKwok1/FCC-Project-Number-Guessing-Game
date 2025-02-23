@@ -1,4 +1,4 @@
-# FCC-Project-Number-Guessing-Game
+# FCC Project Number Guessing Game
 ## Notes
 - Start db
     - sudo service postgresql restart
